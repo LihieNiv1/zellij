@@ -1388,6 +1388,9 @@ fn get_keys_and_hints(mi: &ModeInfo) -> Vec<(String, String, Vec<KeyWithModifier
         (s("Split Down"), s("Down"), single_action_key(&km, &[A::NewPane{direction: Some(Direction::Down), pane_name: None, start_suppressed: false}, TO_NORMAL])),
         (s("Stack"), s("Stack"), single_action_key(&km, &[A::NewStackedPane{command: None, pane_name: None, near_current_pane: false}, TO_NORMAL])),
         (s("Select pane"), s("Select"), to_basemode_key),
+        (s("Split to Four"),s("Fourify"),single_action_key(&km,&[A::NewPane{direction: Some(Direction::Down), pane_name: None, start_suppressed: false}, A::NewPane{direction: Some(Direction::Right), pane_name: None, start_suppressed: false},
+        A::MoveFocus{direction: Dir::Up}, A::NewPane{direction: Some(Direction::Right), pane_name: None, start_suppressed: false}, A::MoveFocus{direction: Dir::Left},
+        TO_NORMAL]))
     ]} else if mi.mode == IM::Tab {
         // With the default bindings, "Move focus" for tabs is tricky: It binds all the arrow keys
         // to moving tabs focus (left/up go left, right/down go right). Since we sort the keys
@@ -1561,17 +1564,31 @@ fn single_action_key(
     action: &[Action],
 ) -> Vec<KeyWithModifier> {
     let mut matching = keymap.iter().find_map(|(key, acvec)| {
-        if acvec.iter().next() == action.iter().next() {
+        if acvec.as_slice() == action {
             Some(key.clone())
         } else {
             None
         }
     });
+
     if let Some(matching) = matching.take() {
-        vec![matching]
+         vec![matching]
     } else {
-        vec![]
+    let mut matching = keymap.iter().find_map(|(key, acvec)| {
+        if acvec.starts_with(action) {
+            Some(key.clone())
+        } else {
+            None
+        }
+    });
+
+    if let Some(matching) = matching.take() {
+      return vec![matching];
     }
+
+    return vec![];
+    }
+
 }
 
 fn session_manager_key(keymap: &[(KeyWithModifier, Vec<Action>)]) -> Vec<KeyWithModifier> {
