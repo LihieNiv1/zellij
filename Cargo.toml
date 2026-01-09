@@ -29,6 +29,7 @@ nix = { workspace = true }
 suggest = { workspace = true }
 thiserror = { workspace = true }
 isahc = { workspace = true }
+wasmtime-winch = "34.0.2"
 
 [dev-dependencies]
 insta = { version = "1.6.0", features = ["backtrace"] }
